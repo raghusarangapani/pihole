@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pihole
+  labels:
+    app: pihole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pihole
+  template:
+    metadata:
+      labels:
+        app: pihole
+    spec:
+      containers:
+      - name: pihole
+        image: pihole/pihole:2021.12.1
+        imagePullPolicy: IfNotPresent
+        stdin: true
+        tty: true
+        resources:
+          limits:
+            memory: 1Gi
+        env:
+        - name: "VIRTUAL_HOST"
+          value: "yourhost.com"
+        - name: "TZ"
+          value: "America/Los_Angeles"
+        - name: "WEBPASSWORD"
+          value: "password"
+        - name: "WEBTHEME"
+          value: "default-dark"
+        ports:
+        - name: webui
+          containerPort: 80
+        - name: dns1
+          hostPort: 53
+          protocol: TCP 
+          containerPort: 53
+        - containerPort: 53
+          name: dns2
+          hostPort: 53
+          protocol: UDP
+        volumeMounts:
+            - mountPath: "/etc/pihole"
+              name: pihole-pvc
+              subPath: "pihole"
+            - mountPath: "/etc/dnsmasq.d"
+              name: pihole-pvc
+              subPath: "dnsmasq"
+      volumes:
+        - name: pihole-pvc
+          persistentVolumeClaim:
+            claimName: pihole-pvc

@@ -1,0 +1,40 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pihole-ingressroute-https
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`yourhost.com`) && (Path(`/pihole/`) || Path(`/pihole`) || PathPrefix(`/pihole`) || PathPrefix(`/pihole/`))
+      kind: Rule
+      services:
+        - name: pihole
+          port: 80
+          namespace: pihole
+          passHostHeader: true
+      middlewares:
+        - name: pihole-addtrailingslash
+        - name: prefixstrip-pihole
+  tls:
+    secretName: pihole-secret
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pihole-ingressroute-http
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`yourhost.com`) && (Path(`/pihole/`) || Path(`/pihole`) || PathPrefix(`/pihole`) || PathPrefix(`/pihole/`))
+      kind: Rule
+      services:
+        - name: pihole
+          port: 80
+          namespace: pihole
+          passHostHeader: true
+      middlewares:
+        - name: redirect
+        - name: pihole-addtrailingslash
+        - name: prefixstrip-pihole

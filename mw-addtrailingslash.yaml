@@ -1,0 +1,8 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: pihole-addtrailingslash
+spec:
+  redirectRegex:
+    regex: ^http://yourhost.com/pihole$
+    replacement: http://yourhost.com/pihole/
